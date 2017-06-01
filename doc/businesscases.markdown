@@ -7,10 +7,18 @@
     * LOX
     * LH2
 * services
-  * near-Earth orbital infrastructure
+  * Terran orbital infrastructure
     * space elevator
     * sky hook
+  * Lunar orbital infrastructune
+    * nearside space elevator
+  * Lunar superconducting facilities
+    * Supercomputer
+    * Particle accelerator
 * propellant and fuel to LEO
 * milestones
   * humans on Mars
-  * Lunar outpost
+  * Lunar surface outpost
+  * Lunar orbital outpost
+  * Lunar surface observatory
+  * Lunar orbital observatory
