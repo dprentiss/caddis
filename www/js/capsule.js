@@ -5,7 +5,7 @@ var Capsule = {
             innerRadius: { quantity: 5, unit: 'm' },
             outerRadius: { quantity: 5.02, unit: 'm' },
             length: { quantity: 30, unit: 'm' }
-            },
+        },
         getVolume: function () {
             let ri = this.cylinder.innerRadius.quantity,
             ro = this.cylinder.outerRadius.quantity,
@@ -13,13 +13,15 @@ var Capsule = {
             let v = l*3.1416*(ro*ro-ri*ri)+4/3*3.1416*(ro*ro*ro-ri*ri*ri);
             console.log(v);
         },
-         getInternalVolume: function () {
+        getInternalVolume: function () {
             let ri = this.cylinder.innerRadius.quantity,
             l = this.cylinder.length.quantity;
             let v = l*3.1416*(ri*ri)+4/3*3.1416*(ri*ri*ri);
             console.log(v);
-        }
-   }
+        },
+        getMaxPressure: function () {
+            let 
+    }
 };
 
 var Engine = {
@@ -39,7 +41,7 @@ var Cylinder = {
 var Materials = [
 {
     name: 'steel',
-    density: { quantity: 8050, unit: 'kg/m3' },
-    maxStress: { quantity: 250, unit: 'MPa' }
+        density: { quantity: 8050, unit: 'kg/m3' },
+        maxStress: { quantity: 250, unit: 'MPa' }
 }
 ];
