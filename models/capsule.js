@@ -35,7 +35,27 @@ var Cylinder = {
         return l * r * r * Math.PI;
 }
 
-var ISQ {
+var ISQ = {
+    [
+        {
+            baseQuantitiy: 'length',
+            dimensionSymbol: 'L',
+        }
+    ],
+
+    systemsOfUnits: {
+        SI: {
+        {baseQuantity: 'length', baseUnit: {name: 'metre', symbol: 'm'}},
+        {baseQuantity: 'mass', baseUnit: {name: 'kilogram', symbol: 'kg'},
+        {baseQuantity: 'time', baseUnit: {name: 'second', symbol: 's'}},
+        {baseQuantity: 'electric current', baseUnit: {name: 'ampere', symbol: 'A'}},
+        {baseQuantity: 'thermodynamic temperature', baseUnit: {name: 'kelvin', symbol: 'K'}},
+        {baseQuantity: 'amount of substance', baseUnit: {name: 'mole', symbol: 'mol'}},
+        {baseQuantity: 'luminous intensity', baseUnit: {name: 'candela', symbol: 'cd'}}
+        }
+
+    /* ISQ base quantity (1.4, 1.6)
+     */
     baseQuantities: [
         'length',
         'mass',
@@ -43,18 +63,18 @@ var ISQ {
         'electric current',
         'thermodynamic temperature',
         'amount of substance',
-        'luminous intensity'
+        'luminous intensity',
+        'number of entities'
     ],
-        quantityDimensions: [
-            {baseQuantity: 'length', dimensionSymbol: 'L'},
-            {baseQuantity: 'mass', dimensionSymbol: 'M'},
-            {baseQuantity: 'time', dimensionSymbol: 'T'},
-            {baseQuantity: 'electric current', dimensionSymbol: 'L'},
-            {baseQuantity: 'thermodynamic temperature', dimensionSymbol: 'Θ'},
-            {baseQuantity: 'amount of substance', dimensionSymbol: 'N'},
-            {baseQuantity: 'luminous intensity', dimensionSymbol: 'J'}
-        ],
-        QuantityValue: function({number:0, reference:''}) {
-             let dim = [0,0,0,0,0,0,0,0]
-        }
-}
+    quantityDimensions: [
+        {baseQuantity: 'length', dimensionSymbol: 'L'},
+        {baseQuantity: 'mass', dimensionSymbol: 'M'},
+        {baseQuantity: 'time', dimensionSymbol: 'T'},
+        {baseQuantity: 'electric current', dimensionSymbol: 'L'},
+        {baseQuantity: 'thermodynamic temperature', dimensionSymbol: 'Θ'},
+        {baseQuantity: 'amount of substance', dimensionSymbol: 'N'},
+        {baseQuantity: 'luminous intensity', dimensionSymbol: 'J'}
+    ],
+    QuantityValue: function({number:0, reference:''}) {
+    }
+};
