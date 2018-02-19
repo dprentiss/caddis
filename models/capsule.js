@@ -35,3 +35,26 @@ var Cylinder = {
         return l * r * r * Math.PI;
 }
 
+var ISQ {
+    baseQuantities: [
+        'length',
+        'mass',
+        'time',
+        'electric current',
+        'thermodynamic temperature',
+        'amount of substance',
+        'luminous intensity'
+    ],
+        quantityDimensions: [
+            {baseQuantity: 'length', dimensionSymbol: 'L'},
+            {baseQuantity: 'mass', dimensionSymbol: 'M'},
+            {baseQuantity: 'time', dimensionSymbol: 'T'},
+            {baseQuantity: 'electric current', dimensionSymbol: 'L'},
+            {baseQuantity: 'thermodynamic temperature', dimensionSymbol: 'Θ'},
+            {baseQuantity: 'amount of substance', dimensionSymbol: 'N'},
+            {baseQuantity: 'luminous intensity', dimensionSymbol: 'J'}
+        ],
+        QuantityValue: function({number:0, reference:''}) {
+             let dim = [0,0,0,0,0,0,0,0]
+        }
+}
