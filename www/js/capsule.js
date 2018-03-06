@@ -27,7 +27,7 @@ var Engine = {
 };
 
 var Cylinder = function (radius, length) {
-    getVolume: function () {
+    getVolume = function () {
         let r = this.radius.quantity;
         l = this.length.quantity;
         return l * r * r * Math.PI;
