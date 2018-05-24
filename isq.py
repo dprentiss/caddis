@@ -30,7 +30,10 @@ class QuantityValue:
         self.uncertainty = uncertainty
         if self.uncertainty == None:
             self.standardUncertainty = abs(standardUncertainty)
-            self.relativeUncertainty = self.standardUncertainty / abs(self.number)
+            if self.number != 0:
+                self.relativeUncertainty = self.standardUncertainty / abs(self.number)
+            else:
+                self.relativeUncertainty = 0
         
         self.referenceList = [split('\^', unit) for unit in
                 split('\s+', self.reference)]
@@ -119,13 +122,20 @@ class QuantityValue:
     def __radd__(self, other):
         return self.__add__(other)
     
-    def __sub__(self,other):
+    def __sub__(self, other):
         if isinstance(other, self.__class__) and self.dimDict == other.dimDict:
             return QuantityValue(self.number - other.number,
                                  self.reference,
                                  sqrt(self.standardUncertainty**2 + other.standardUncertainty**2))
+        elif isinstance(other, (int, float)) and self.dimDict == {}:
+            return QuantityValue(self.number - other,
+                             self.reference,
+                             abs(other) * self.standardUncertainty)
         else:
             raise TypeError("cannot subtract values with different quantity dimensions")
+    
+    def __rsub__(self, other):
+        return self.__sub__(other)
                                
     def __mul__(self, other):
         if isinstance(other, self.__class__):
