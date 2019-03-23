@@ -11,7 +11,8 @@ class QuantityDimension:
                 'electric current': 0,
                 'thermodynamic temperature': 0,
                 'amount of substance': 0,
-                'luminous intensity':0}
+                'luminous intensity': 0
+        }
         if baseQuantityExponents != None:
             for key, value in baseQuantityExponents.items():
                 isPresentAndValid = key in self.baseQuantityExponents and \
@@ -20,6 +21,11 @@ class QuantityDimension:
                     self.baseQuantityExponents.update({key: value})
                 else:
                     raise TypeError('\'' + key + '\' is not an ISQ base quantity')
+                    
+class IntensiveProperty:
+    def __init__(self, quantityDimension = None, quantityValue = None):
+        self.quantityDimension = quantityDimension
+        self.quantityValue = quantityValue
 
 class QuantityValue:
     def __init__(self, number, reference,
@@ -178,6 +184,6 @@ class QuantityValue:
                              self.standardUncertainty)
 
 m = QuantityValue(1, 'm', 0)
-km = QuantityValue(1e3, 'km', 0)
+km = QuantityValue(1e3, 'm', 0)
 s = QuantityValue(1, 's', 0)
 N = QuantityValue(1, 'kg m s^-2', 0)
