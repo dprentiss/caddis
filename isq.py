@@ -54,7 +54,7 @@ class QuantityValue:
     def updateDims(self):
         for i in self.dimList:
             self.dimDict[i[0]] = (self.dimDict[i[0]] + i[1]) if i[0] in self.dimDict else i[1]
-            self.reference = ''
+        self.reference = ''
         for key, exp in list(self.dimDict.items()):
             if exp == 0:
                 del self.dimDict[key]
