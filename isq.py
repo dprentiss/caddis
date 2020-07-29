@@ -3,6 +3,15 @@ from math import floor, exp, sqrt, log10
 from fractions import Fraction
 
 class QuantityDimension:
+    dimensionSymbols = {
+            'length': 'L',
+            'mass': 'M',
+            'time': 'T',
+            'electric current': 'I',
+            'thermodynamic temperature': 'Θ',
+            'amount of substance': 'N',
+            'luminous intensity': 'J'
+    }
     def __init__(self, baseQuantityExponents = None):
         self.baseQuantityExponents = {
             'length': 0,
@@ -21,8 +30,39 @@ class QuantityDimension:
                     self.baseQuantityExponents.update({key: value})
                 else:
                     raise TypeError('\'' + key + '\' is not an ISQ base quantity')
+   
+    def __str__(self):
+        s = ''
+        for key in self.dimensionSymbols:
+            if self.baseQuantityExponents[key] != 0:
+                s += self.dimensionSymbols[key]
+                if self.baseQuantityExponents[key] != 1:
+                    s += '^' + str(self.baseQuantityExponents[key])
+                s += ' '
+        return s
+    
+    def __repr__(self):
+        return self.__str__()
+    
+    def __mul__(self, other):
+        if isinstance(other, self.__class__):
+            exponents = {key: self.baseQuantityExponents[key] + other.baseQuantityExponents[key] for key in self.baseQuantityExponents}
+            return QuantityDimension(exponents)
+        else:
+            raise TypeError("something wrong with baseQuantityExponents")
+            
+    def __truediv__(self, other):
+        if isinstance(other, self.__class__):
+            exponents = {key: self.baseQuantityExponents[key] - other.baseQuantityExponents[key] for key in self.baseQuantityExponents}
+            return QuantityDimension(exponents)
+        else:
+            raise TypeError("something wrong with baseQuantityExponents")
+            
+    def sqrt(self):
+        return {}
+            
 
-class IntensiveProperty:
+class Quantity:
     def __init__(self, quantityDimension = None, quantityValue = None):
         self.quantityDimension = quantityDimension
         self.quantityValue = quantityValue
