@@ -44,6 +44,12 @@ class QuantityDimension:
     def __repr__(self):
         return self.__str__()
     
+    def __eq__(self, other):
+        return self.baseQuantityExponents == other.baseQuantityExponents
+    
+    def __ne__(self, other):
+        return self.baseQuantityExponents != other.baseQuantityExponents
+    
     def __mul__(self, other):
         if isinstance(other, self.__class__):
             exponents = {key: self.baseQuantityExponents[key] + other.baseQuantityExponents[key] for key in self.baseQuantityExponents}
@@ -53,23 +59,22 @@ class QuantityDimension:
             
     def __truediv__(self, other):
         if isinstance(other, self.__class__):
-            exponents = {key: self.baseQuantityExponents[key] - other.baseQuantityExponents[key] for key in self.baseQuantityExponents}
-            return QuantityDimension(exponents)
+            return self * other.inv()
         else:
             raise TypeError("something wrong with baseQuantityExponents")
+    
+    def inv(self):
+        exponents = {key: self.baseQuantityExponents[key] * -1 for key in self.baseQuantityExponents}
+        return QuantityDimension(exponents)
             
     def sqrt(self):
-        return {}
+        exponents = {key: Fraction(self.baseQuantityExponents[key],2) for key in self.baseQuantityExponents}
+        return QuantityDimension(exponents)
             
-
-class Quantity:
-    def __init__(self, quantityDimension = None, quantityValue = None):
-        self.quantityDimension = quantityDimension
-        self.quantityValue = quantityValue
-
 class QuantityValue:
     def __init__(self, number, reference,
-                 standardUncertainty = 0, uncertainty = None):
+                 standardUncertainty = 0, uncertainty = None,
+                 quantityDimension = QuantityDimension()):
 
         self.number = number
         self.reference = reference
@@ -77,14 +82,15 @@ class QuantityValue:
         if self.uncertainty == None:
             self.standardUncertainty = abs(standardUncertainty)
             if self.number != 0:
-                self.relativeUncertainty =self.standardUncertainty / abs(self.number)
+                self.relativeUncertainty = self.standardUncertainty / abs(self.number)
             else:
                 self.relativeUncertainty = 0
+        self.quantityDimension = quantityDimension
 
         self.referenceList = [split('\^', unit) for unit in
                               split('\s+', self.reference)]
 
-        self.dimList = filter(lambda i: (i[0] != '1' and i[0] != ''), [[dim[0], int(dim[1]) if len(dim) == 2 else 1] for dim in self.referenceList])
+        self.dimList = filter(lambda i: (i[0] != '1' and i[0] != ''), [[dim[0], Fraction(dim[1]) if len(dim) == 2 else 1] for dim in self.referenceList])
         self.dimDict = {}
         self.updateDims()
 
@@ -148,7 +154,7 @@ class QuantityValue:
         result = QuantityValue(sqrt(self.number),
                                self.reference,
                                sqrt(self.number) * 0.5 * self.relativeUncertainty)
-        result.dimDict = {key: int(value / 2) for key, value in self.dimDict.items()}
+        result.dimDict = {key: Fraction(value / 2) for key, value in self.dimDict.items()}
         result.updateDims()
         return result
 
@@ -188,7 +194,8 @@ class QuantityValue:
             return QuantityValue(self.number * other.number,
                                  self.reference + ' ' + other.reference,
                                  abs(self.number * other.number)
-                                 * sqrt(self.relativeUncertainty**2 + other.relativeUncertainty**2))
+                                 * sqrt(self.relativeUncertainty**2 + other.relativeUncertainty**2),
+                                 quantityDimension = self.quantityDimension * other.quantityDimension)
         elif isinstance(other, (int, float)):
             return QuantityValue(other * self.number,
                                  self.reference,
@@ -201,29 +208,55 @@ class QuantityValue:
 
     def __truediv__(self, other):
         if isinstance(other, self.__class__):
-            return QuantityValue(self.number / other.number,
-                                 self.reference + ' ' + other.invReference(),
-                                 abs(self.number / other.number)
-                                 * sqrt(self.relativeUncertainty**2 + other.relativeUncertainty**2))
+            return self * other.inv()
         elif isinstance(other, (int, float)):
             return QuantityValue(self.number / other,
                                  self.reference,
-                                 abs(1 / other) * self.standardUncertainty)
+                                 abs(1 / other) * self.standardUncertainty,
+                                 quantityDimension = self.quantityDimension)
 
     def __rtruediv__(self, other):
         if isinstance(other, (int, float)):
             return QuantityValue(other / self.number,
-                                 self.reference,
-                                 abs(other) * sqrt(self.relativeUncertainty**2))
+                                 self.invReference(),
+                                 abs(other / self.number) * sqrt(self.relativeUncertainty**2),
+                                 quantityDimension = self.quantityDimension.inv())
         else:
             raise TypeError("types not supported for division")
 
     def __neg__(self):
         return QuantityValue(-1 * self.number,
                              self.reference,
-                             self.standardUncertainty)
+                             self.standardUncertainty,
+                             self.quantityDimension)
+    
+    def inv(self):
+        return QuantityValue(1/self.number, self.invReference(),
+                             abs(1/self.number) * self.relativeUncertainty,
+                             quantityDimension = self.quantityDimension.inv())
 
-m = QuantityValue(1, 'm', 0)
-km = QuantityValue(1e3, 'm', 0)
-s = QuantityValue(1, 's', 0)
-N = QuantityValue(1, 'kg m s^-2', 0)
+length = QuantityDimension({'length':1})
+mass = QuantityDimension({'mass':1})
+time = QuantityDimension({'time':1})    
+current = QuantityDimension({'electric current':1})
+temp = QuantityDimension({'thermodynamic temperature':1})
+mol = QuantityDimension({'amount of substance':1})
+intensity = QuantityDimension({'luminous intensity':1})
+
+
+factorPrefixSymbols = {-12:'p',-9:'n',-6:'μ',-3:'m',3:'k',6:'M',9:'G',12:'T'}
+baseUnitSymbols = {'length':'m','mass':'kg','time':'s','electric current':'A','thermodynamic temperature':'K','amount of substance':'mol','luminous intensity':'cd'}
+
+m = QuantityValue(1, 'm', quantityDimension=length)
+kg = QuantityValue(1, 'kg', quantityDimension=mass)
+s = QuantityValue(1, 's', quantityDimension=time)
+A = QuantityValue(1, 'A', quantityDimension=current)
+K = QuantityValue(1, 'K', quantityDimension=temp)
+mol = QuantityValue(1, 'mol', quantityDimension=mol)
+cd = QuantityValue(1, 'cd', quantityDimension=intensity)
+
+N = kg * m / s / s
+V = kg * m * m / s / s / s / A
+
+derivedQuantities = {}
+derivedQuantities[frozenset(N.quantityDimension.baseQuantityExponents.items())] = 'N'
