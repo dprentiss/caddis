@@ -228,7 +228,7 @@ class QuantityValue:
         return QuantityValue(-1 * self.number,
                              self.reference,
                              self.standardUncertainty,
-                             self.quantityDimension)
+                             quantityDimension = self.quantityDimension)
     
     def inv(self):
         return QuantityValue(1/self.number, self.invReference(),
@@ -256,7 +256,14 @@ mol = QuantityValue(1, 'mol', quantityDimension=mol)
 cd = QuantityValue(1, 'cd', quantityDimension=intensity)
 
 N = kg * m / s / s
+Pa = kg / m / s / s
 V = kg * m * m / s / s / s / A
+W = kg * m * m / s / s / s
+J = kg * m * m / s / s
 
 derivedQuantities = {}
 derivedQuantities[frozenset(N.quantityDimension.baseQuantityExponents.items())] = 'N'
+derivedQuantities[frozenset(Pa.quantityDimension.baseQuantityExponents.items())] = 'Pa'
+derivedQuantities[frozenset(V.quantityDimension.baseQuantityExponents.items())] = 'V'
+derivedQuantities[frozenset(W.quantityDimension.baseQuantityExponents.items())] = 'W'
+derivedQuantities[frozenset(J.quantityDimension.baseQuantityExponents.items())] = 'J'
