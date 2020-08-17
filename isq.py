@@ -3,17 +3,17 @@ from math import floor, exp, sqrt, log10
 from fractions import Fraction
 
 class QuantityDimension:
-    dimensionSymbols = {
-            'length': 'L',
-            'mass': 'M',
-            'time': 'T',
-            'electric current': 'I',
-            'thermodynamic temperature': 'Θ',
-            'amount of substance': 'N',
-            'luminous intensity': 'J'
-    }
+    dimensionSymbols = (
+            ('length', 'L'),
+            ('mass', 'M'),
+            ('time', 'T'),
+            ('electric current', 'I'),
+            ('thermodynamic temperature', 'Θ'),
+            ('amount of substance', 'N'),
+            ('luminous intensity', 'J')
+    )
     def __init__(self, baseQuantityExponents = None):
-        self.baseQuantityExponents = {
+        exponents = {
             'length': 0,
             'mass': 0,
             'time': 0,
@@ -24,21 +24,28 @@ class QuantityDimension:
         }
         if baseQuantityExponents != None:
             for key, value in baseQuantityExponents.items():
-                isPresentAndValid = key in self.baseQuantityExponents and \
+                isPresentAndValid = key in exponents and \
                                     isinstance(value, (Fraction, int))
                 if isPresentAndValid:
-                    self.baseQuantityExponents.update({key: value})
+                    exponents.update({key: value})
                 else:
                     raise TypeError('\'' + key + '\' is not an ISQ base quantity')
+        self.baseQuantityExponents = frozenset(exponents.items())
+
+    def dim(self, key=None):
+        if key == None:
+            return dict(self.baseQuantityExponents)
+        else:
+            return dict(self.baseQuantityExponents)[key]
    
     def __str__(self):
         s = ''
-        for key in self.dimensionSymbols:
-            if self.baseQuantityExponents[key] != 0:
-                s += self.dimensionSymbols[key]
-                if self.baseQuantityExponents[key] != 1:
-                    s += '^' + str(self.baseQuantityExponents[key])
-                s += ' '
+        symbols = dict(self.dimensionSymbols)
+        for key in symbols:
+            if self.dim(key) != 0:
+                s += symbols[key]
+                if self.dim(key) != 1:
+                    s += '^(' + str(self.dim(key)) + ')'
         return s
     
     def __repr__(self):
@@ -52,7 +59,7 @@ class QuantityDimension:
     
     def __mul__(self, other):
         if isinstance(other, self.__class__):
-            exponents = {key: self.baseQuantityExponents[key] + other.baseQuantityExponents[key] for key in self.baseQuantityExponents}
+            exponents = {key: self.dim(key) + other.dim(key) for key in self.dim()}
             return QuantityDimension(exponents)
         else:
             raise TypeError("something wrong with baseQuantityExponents")
@@ -64,11 +71,11 @@ class QuantityDimension:
             raise TypeError("something wrong with baseQuantityExponents")
     
     def inv(self):
-        exponents = {key: self.baseQuantityExponents[key] * -1 for key in self.baseQuantityExponents}
+        exponents = {key: self.dim(key) * -1 for key in self.dim()}
         return QuantityDimension(exponents)
             
     def sqrt(self):
-        exponents = {key: Fraction(self.baseQuantityExponents[key],2) for key in self.baseQuantityExponents}
+        exponents = {key: Fraction(self.dim(key),2) for key in self.dim()}
         return QuantityDimension(exponents)
             
 class QuantityValue:
@@ -94,8 +101,8 @@ class QuantityValue:
         self.dimDict = {}
         self.updateDims()
 
-    def parseReference(self):
-        pass
+    def dim(self, key=None):
+        return self.quantityDimension(key)
 
     def updateDims(self):
         for i in self.dimList:
@@ -153,7 +160,8 @@ class QuantityValue:
     def sqrt(self):
         result = QuantityValue(sqrt(self.number),
                                self.reference,
-                               sqrt(self.number) * 0.5 * self.relativeUncertainty)
+                               sqrt(self.number) * 0.5 * self.relativeUncertainty,
+                               quantityDimension = self.quantityDimension.sqrt())
         result.dimDict = {key: Fraction(value / 2) for key, value in self.dimDict.items()}
         result.updateDims()
         return result
@@ -262,8 +270,8 @@ W = kg * m * m / s / s / s
 J = kg * m * m / s / s
 
 derivedQuantities = {}
-derivedQuantities[frozenset(N.quantityDimension.baseQuantityExponents.items())] = 'N'
-derivedQuantities[frozenset(Pa.quantityDimension.baseQuantityExponents.items())] = 'Pa'
-derivedQuantities[frozenset(V.quantityDimension.baseQuantityExponents.items())] = 'V'
-derivedQuantities[frozenset(W.quantityDimension.baseQuantityExponents.items())] = 'W'
-derivedQuantities[frozenset(J.quantityDimension.baseQuantityExponents.items())] = 'J'
+derivedQuantities[N.quantityDimension.baseQuantityExponents] = 'N'
+derivedQuantities[Pa.quantityDimension.baseQuantityExponents] = 'Pa'
+derivedQuantities[V.quantityDimension.baseQuantityExponents] = 'V'
+derivedQuantities[W.quantityDimension.baseQuantityExponents] = 'W'
+derivedQuantities[J.quantityDimension.baseQuantityExponents] = 'J'
