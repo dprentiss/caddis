@@ -1,76 +1,144 @@
-use fraction::GenericFraction;
 use std::fmt;
-use std::ops::Add;
+use fraction::{GenericFraction, Zero, One};
+use std::ops::{Deref, DerefMut, Add, Sub, Mul, Div, Neg};
+
+#[derive(Clone, Copy)]
+struct Fraction(GenericFraction<u8>);
+
+impl Mul<u8> for Fraction {
+    type Output = Fraction;
+
+    fn mul(self, other: u8) -> Self::Output {
+        self
+    }
+}
+
+impl Deref for Fraction {
+    type Target = GenericFraction<u8>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for Fraction {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
 
 #[allow(dead_code)]
 enum BaseQuantity {
-    Length(GenericFraction<u8>),
-    Mass(GenericFraction<u8>),
-    Time(GenericFraction<u8>),
-    ElectricCurrent(GenericFraction<u8>),
-    ThermodynamicTemperature(GenericFraction<u8>),
-    AmountOfASubstance(GenericFraction<u8>),
-    LuminousIntensity(GenericFraction<u8>),
+    Length,
+    Mass,
+    Time,
+    ElectricCurrent,
+    ThermodynamicTemperature,
+    AmountOfASubstance,
+    LuminousIntensity,
 }
 
 impl BaseQuantity {
-    fn get_symbol(&self) -> &'static str {
+    fn symbol(&self) -> &'static str {
         match *self {
-            Self::Length(..) => "L",
-            Self::Mass(..) => "M",
-            Self::Time(..) => "T",
-            Self::ElectricCurrent(..) => "I",
-            Self::ThermodynamicTemperature(..) => "Θ",
-            Self::AmountOfASubstance(..) => "N",
-            Self::LuminousIntensity(..) => "J",
-        }
-    }
-
-    fn get_exponent(&self) -> GenericFraction<u8> {
-        match *self {
-            Self::Length(f) => f,
-            Self::Mass(f) => f,
-            Self::Time(f) => f,
-            Self::ElectricCurrent(f) => f,
-            Self::ThermodynamicTemperature(f) => f,
-            Self::AmountOfASubstance(f) => f,
-            Self::LuminousIntensity(f) => f,
+            Self::Length => "L",
+            Self::Mass => "M",
+            Self::Time => "T",
+            Self::ElectricCurrent => "I",
+            Self::ThermodynamicTemperature => "Θ",
+            Self::AmountOfASubstance => "N",
+            Self::LuminousIntensity => "J",
         }
     }
 }
 
-impl fmt::Display for BaseQuantity {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}^{}", self.get_symbol(), self.get_exponent())
-    }
-}
-
+#[derive(Clone,Copy)]
 struct QuantityDimension {
-    dimension: [BaseQuantity; 7],
+    exponents: [Fraction;7],
 }
 
-impl PartialEq for QuantityDimension {
-    fn eq(&self, other: &Self) -> bool {
-        for q in &self.dimension {
+impl QuantityDimension {
+    const BASE_QUANTITIES: [BaseQuantity;7] = [
+        BaseQuantity::Length,
+        BaseQuantity::Mass,
+        BaseQuantity::Time,
+        BaseQuantity::ElectricCurrent,
+        BaseQuantity::ThermodynamicTemperature,
+        BaseQuantity::AmountOfASubstance,
+        BaseQuantity::LuminousIntensity,
+    ];
+
+    fn pow(self, exp: u8) -> Self {
+        let mut exponents: [Fraction;7] = [Fraction::zero();7];
+        let iter = self.exponents.iter().zip(exponents.iter_mut());
+        for (base, exponent) in iter {
+            //*exponent = base * &exp;
         }
+        QuantityDimension {exponents: exponents}
     }
 }
 
 impl Add for QuantityDimension {
     type Output = Self;
 
-    fn add(self, other:Self) -> Self {
+    fn add(self, _:Self) -> Self::Output {
         self
+    }
+}
+
+impl Sub for QuantityDimension {
+    type Output = Self;
+
+    fn sub(self, _:Self) -> Self {
+        self
+    }
+}
+
+impl Neg for QuantityDimension {
+    type Output = Self;
+
+    fn neg(self) -> Self {
+        self
+    }
+}
+
+impl Mul for QuantityDimension {
+    type Output = Self;
+
+    fn mul(self, other: Self) -> Self {
+        let mut exponents: [Fraction;7] = [Fraction::zero();7];
+        let iter = self.exponents.iter().zip(other.exponents.iter()).zip(exponents.iter_mut());
+        for ((lhs, rhs), exponent) in iter {
+            *exponent = *lhs + *rhs;
+        }
+        QuantityDimension {exponents: exponents}
+    }
+}
+
+impl Div for QuantityDimension {
+    type Output = Self;
+
+    fn div(self, other: Self) -> Self {
+        let mut exponents: [Fraction;7] = [Fraction::zero();7];
+        let iter = self.exponents.iter().zip(other.exponents.iter()).zip(exponents.iter_mut());
+        for ((lhs, rhs), exponent) in iter {
+            *exponent = lhs - rhs;
+        }
+        QuantityDimension {exponents: exponents}
     }
 }
 
 impl fmt::Display for QuantityDimension {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut s = String::new();
-        for q in &self.dimension {
-            if q.get_exponent().is_normal() {
-                s.push_str(&q.to_string());
-                s.push_str(" ");
+        for (quantity, &exponent) in Self::BASE_QUANTITIES.iter().zip(self.exponents.iter()) {
+            if exponent.is_normal() {
+                s.push_str(quantity.symbol());
+                if exponent != Fraction::one() {
+                    s.push('^');
+                    s.push_str(&exponent.to_string());
+                }
+                s.push(' ');
             }
         }
         write!(f, "{}", s)
@@ -90,28 +158,17 @@ struct Quantity {
 }
 
 fn main() {
-    let q: BaseQuantity = BaseQuantity::Length(GenericFraction::new(2u8, 1u8));
-    println!("{}", q.get_symbol());
-    println!("{}", q.get_exponent());
-    /*{println!("^({}/{})",
-             q.get_exponent().numer().unwrap(),
-             q.get_exponent().denom().unwrap());
-    */
 
-    let zero = GenericFraction::new(0u8, 1u8);
-    let one = GenericFraction::new(1u8, 1u8);
+    let zero = Fraction::zero();
+    let one = Fraction::one();
     let one_half = GenericFraction::new(1u8, 2u8);
-    let dim = QuantityDimension {
-        dimension: [
-            BaseQuantity::Length(one),
-            BaseQuantity::Mass(one_half),
-            BaseQuantity::Time(one),
-            BaseQuantity::ElectricCurrent(zero),
-            BaseQuantity::ThermodynamicTemperature(zero),
-            BaseQuantity::AmountOfASubstance(zero),
-            BaseQuantity::LuminousIntensity(zero),
-        ],
-    };
-    println!("{}", dim);
-    println!("{}", BaseQuantity::Length(one));
+
+    let exponents = [one, one, one_half, zero, one, zero, zero];
+    let p = QuantityDimension { exponents: exponents };
+    //let q = p.clone();
+
+    println!("{}", p);
+    println!("{}", p * p);
+    println!("{}", p.pow(2u8));
+    println!("{}", Fraction::one()+1u8);
 }
