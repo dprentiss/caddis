@@ -1,174 +1,155 @@
-use std::fmt;
-use fraction::{GenericFraction, Zero, One};
-use std::ops::{Deref, DerefMut, Add, Sub, Mul, Div, Neg};
+pub mod geometry;
+pub mod units;
+pub mod quantity;
 
-#[derive(Clone, Copy)]
-struct Fraction(GenericFraction<u8>);
-
-impl Mul<u8> for Fraction {
-    type Output = Fraction;
-
-    fn mul(self, other: u8) -> Self::Output {
-        self
-    }
-}
-
-impl Deref for Fraction {
-    type Target = GenericFraction<u8>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for Fraction {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-#[allow(dead_code)]
-enum BaseQuantity {
-    Length,
-    Mass,
-    Time,
-    ElectricCurrent,
-    ThermodynamicTemperature,
-    AmountOfASubstance,
-    LuminousIntensity,
-}
-
-impl BaseQuantity {
-    fn symbol(&self) -> &'static str {
-        match *self {
-            Self::Length => "L",
-            Self::Mass => "M",
-            Self::Time => "T",
-            Self::ElectricCurrent => "I",
-            Self::ThermodynamicTemperature => "Θ",
-            Self::AmountOfASubstance => "N",
-            Self::LuminousIntensity => "J",
-        }
-    }
-}
-
-#[derive(Clone,Copy)]
-struct QuantityDimension {
-    exponents: [Fraction;7],
-}
-
-impl QuantityDimension {
-    const BASE_QUANTITIES: [BaseQuantity;7] = [
-        BaseQuantity::Length,
-        BaseQuantity::Mass,
-        BaseQuantity::Time,
-        BaseQuantity::ElectricCurrent,
-        BaseQuantity::ThermodynamicTemperature,
-        BaseQuantity::AmountOfASubstance,
-        BaseQuantity::LuminousIntensity,
-    ];
-
-    fn pow(self, exp: u8) -> Self {
-        let mut exponents: [Fraction;7] = [Fraction::zero();7];
-        let iter = self.exponents.iter().zip(exponents.iter_mut());
-        for (base, exponent) in iter {
-            //*exponent = base * &exp;
-        }
-        QuantityDimension {exponents: exponents}
-    }
-}
-
-impl Add for QuantityDimension {
-    type Output = Self;
-
-    fn add(self, _:Self) -> Self::Output {
-        self
-    }
-}
-
-impl Sub for QuantityDimension {
-    type Output = Self;
-
-    fn sub(self, _:Self) -> Self {
-        self
-    }
-}
-
-impl Neg for QuantityDimension {
-    type Output = Self;
-
-    fn neg(self) -> Self {
-        self
-    }
-}
-
-impl Mul for QuantityDimension {
-    type Output = Self;
-
-    fn mul(self, other: Self) -> Self {
-        let mut exponents: [Fraction;7] = [Fraction::zero();7];
-        let iter = self.exponents.iter().zip(other.exponents.iter()).zip(exponents.iter_mut());
-        for ((lhs, rhs), exponent) in iter {
-            *exponent = *lhs + *rhs;
-        }
-        QuantityDimension {exponents: exponents}
-    }
-}
-
-impl Div for QuantityDimension {
-    type Output = Self;
-
-    fn div(self, other: Self) -> Self {
-        let mut exponents: [Fraction;7] = [Fraction::zero();7];
-        let iter = self.exponents.iter().zip(other.exponents.iter()).zip(exponents.iter_mut());
-        for ((lhs, rhs), exponent) in iter {
-            *exponent = lhs - rhs;
-        }
-        QuantityDimension {exponents: exponents}
-    }
-}
-
-impl fmt::Display for QuantityDimension {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut s = String::new();
-        for (quantity, &exponent) in Self::BASE_QUANTITIES.iter().zip(self.exponents.iter()) {
-            if exponent.is_normal() {
-                s.push_str(quantity.symbol());
-                if exponent != Fraction::one() {
-                    s.push('^');
-                    s.push_str(&exponent.to_string());
-                }
-                s.push(' ');
-            }
-        }
-        write!(f, "{}", s)
-    }
-}
-
-#[allow(dead_code)]
-struct QuantityValue {
-    number: f32,
-    reference: String,
-}
-
-#[allow(dead_code)]
-struct Quantity {
-    dimension: QuantityDimension,
-    value: QuantityValue,
-}
+use geometry::FiniteDimInnerSpace;
+use geometry::NormedSpace;
+use geometry::Vector;
+use units::QuantityValue;
 
 fn main() {
 
-    let zero = Fraction::zero();
-    let one = Fraction::one();
-    let one_half = GenericFraction::new(1u8, 2u8);
+    let a = QuantityValue {
+        number: 10000f64,
+        uncertainty: 0.0001,
+        ..QuantityValue::m()
+    };
+    let b = QuantityValue {
+        number: 10000f64,
+        uncertainty: 0.001,
+        ..QuantityValue::m()
+    };
+    let c = QuantityValue {
+        number: 10000f64,
+        uncertainty: 0.01,
+        ..QuantityValue::m()
+    };
+    let d = QuantityValue {
+        number: 10000f64,
+        uncertainty: 0.1,
+        ..QuantityValue::m()
+    };
+    let e = QuantityValue {
+        number: 10000f64,
+        uncertainty: 1.0,
+        ..QuantityValue::m()
+    };
+    let f = QuantityValue {
+        number: 10000f64,
+        uncertainty: 10.0,
+        ..QuantityValue::m()
+    };
+    let g = QuantityValue {
+        number: 10000f64,
+        uncertainty: 100.0,
+        ..QuantityValue::m()
+    };
+    let h = QuantityValue {
+        number: 10000f64,
+        uncertainty: 1000.0,
+        ..QuantityValue::m()
+    };
+    println!("a: {}", a);
+    println!("b: {}", b);
+    println!("c: {}", c);
+    println!("d: {}", d);
+    println!("e: {}", e);
+    println!("f: {}", f);
+    println!("g: {}", g);
+    println!("h: {}", h);
+    println!("{}", ' ');
+    let a = QuantityValue {
+        number: 10000f64,
+        uncertainty: 0.0005,
+        ..QuantityValue::m()
+    };
+    let b = QuantityValue {
+        number: 10000f64,
+        uncertainty: 0.005,
+        ..QuantityValue::m()
+    };
+    let c = QuantityValue {
+        number: 10000f64,
+        uncertainty: 0.05,
+        ..QuantityValue::m()
+    };
+    let d = QuantityValue {
+        number: 10000f64,
+        uncertainty: 0.5,
+        ..QuantityValue::m()
+    };
+    let e = QuantityValue {
+        number: 10000f64,
+        uncertainty: 5.0,
+        ..QuantityValue::m()
+    };
+    let f = QuantityValue {
+        number: 10000f64,
+        uncertainty: 50.0,
+        ..QuantityValue::m()
+    };
+    let g = QuantityValue {
+        number: 10000f64,
+        uncertainty: 500.0,
+        ..QuantityValue::m()
+    };
+    let h = QuantityValue {
+        number: 10000f64,
+        uncertainty: 5000.0,
+        ..QuantityValue::m()
+    };
+    println!("a: {}", a);
+    println!("b: {}", b);
+    println!("c: {}", c);
+    println!("d: {}", d);
+    println!("e: {}", e);
+    println!("f: {}", f);
+    println!("g: {}", g);
+    println!("h: {}", h);
 
-    let exponents = [one, one, one_half, zero, one, zero, zero];
-    let p = QuantityDimension { exponents: exponents };
-    //let q = p.clone();
+    let z = QuantityValue {
+        number: 10.3608,
+        uncertainty: 0.0005,
+        ..QuantityValue::default()
+    };
+    let o = QuantityValue {
+        number: 50.1234567,
+        uncertainty: 0.000543,
+        ..QuantityValue::default()
+    };
+    //println!("{}", z);
+    let u = z.uncertainty;
+    let t = u.log10();
+    let e = t.trunc();
+    println!("{}", t);
+    println!("{}", e);
+    println!("z: {}", z);
+    println!("o/z: {}", o / z);
+    println!("o*z: {}", o * z);
+    println!("o*z*z: {}", o * z * z);
+    println!("o/z/z: {}", o / z / z);
+    println!("{}", o / z / z / z);
+    println!("{}", o * z * z * z);
 
-    println!("{}", p);
-    println!("{}", p * p);
-    println!("{}", p.pow(2u8));
-    println!("{}", Fraction::one()+1u8);
+    let u = Vector::new(&[2.0, 0.0, 0.0]);
+    let v = Vector::new(&[3.0, 0.0, 0.0]);
+    //let v = Vector(VectorType::from_slice(&[3.0, 0.0, 0.0]).unwrap());
+    let w = Vector::new(&[5.0, 0.0, 0.0]);
+    let x = Vector::new(&[0.0, 7.0, 0.0]);
+    let z = &mut [u, v, w, x];
+    println!("{:?}", z);
+    println!("{:?}", z[3]);
+    println!("{:?}", z[3].normalize());
+    let _d = Vector::orthonormalize(z);
+    println!("{:?}", z[1]);
+    println!("{:?}", z[1].normalize());
+    println!("{:?}", z[1].norm_squared());
+    println!("{:?}", z[1].norm());
+    println!("{:?}", z[1].normalize().norm());
+    //println!("{:?}", Point::orthonormalize(z));
+    println!("{:?}", z);
+    println!(
+        "{:?}",
+        Vector::orthonormal_subspace_basis(z, |_s: &Vector| { true })
+    );
 }
