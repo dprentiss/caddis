@@ -1,6 +1,5 @@
 pub mod geometry;
 pub mod units;
-pub mod quantity;
 
 use geometry::FiniteDimInnerSpace;
 use geometry::NormedSpace;
