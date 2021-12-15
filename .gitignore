@@ -1,1 +1,10 @@
+# latex
+auto/
+*.aux
+*.log
+*.pdf
+*.synctex.gz
+
+# rust
 caddis/target/
+*.lock
