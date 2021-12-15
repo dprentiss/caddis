@@ -1,9 +1,28 @@
+body {
+    margin: 0px;
+}
+
+#tab-list {
+    display: flex;
+    flex-direction: row;
+    padding-left: 0.5ex;
+}
+
+button.tab {
+    border: none;
+    font: inherit;
+    font-family: sans-serif;
+    color: inherit;
+    background-color: transparent;
+    padding: 1ex 0.5ex 1ex 0.5ex;
+}
+
 .swatch {
     height: 200px;
     width: 200px;
     margin: 8px;
     display: inline-block;
-    padding: 8px;
+    padding: 16px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
 .mini-swatch {
@@ -31,15 +50,6 @@
 --blue: #268bd2;
 --cyan: #2aa198;
 --green: #859900;
-}
-
-body {
-    margin: 0px;
-}
-
-canvas {
-    width: 80%;
-    height: 80%;
 }
 
 .s-base03 {

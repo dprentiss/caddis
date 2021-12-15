@@ -1,17 +1,17 @@
-use num::rational::Ratio;
-use num::Zero;
-use num::One;
 use num::pow::Pow;
+use num::rational::Ratio;
+use num::One;
+use num::Zero;
 use std::fmt;
-use std::ops::{Mul, Div};
+use std::ops::{Div, Mul};
 
 const NUM_DIM: usize = 7usize;
-const _DIMENSION_SYMBOLS: [&str; NUM_DIM] = ["L", "M", "T", "I", "Θ", "N", "J",];
-const UNIT_SYMBOLS: [&str; NUM_DIM] = ["m", "kg", "s", "A", "K", "mol", "cd",];
+const _DIMENSION_SYMBOLS: [&str; NUM_DIM] = ["L", "M", "T", "I", "Θ", "N", "J"];
+const UNIT_SYMBOLS: [&str; NUM_DIM] = ["m", "kg", "s", "A", "K", "mol", "cd"];
 
 type DimensionalExponent = Ratio<i8>;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct QuantityValue {
     pub number: f64,
     pub dimension: [DimensionalExponent; NUM_DIM],
@@ -19,7 +19,6 @@ pub struct QuantityValue {
 }
 
 impl Default for QuantityValue {
-
     fn default() -> QuantityValue {
         QuantityValue {
             number: 0f64,
@@ -30,7 +29,6 @@ impl Default for QuantityValue {
 }
 
 impl fmt::Display for QuantityValue {
-
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let n = self.number;
         let mut s = String::new();
@@ -40,10 +38,15 @@ impl fmt::Display for QuantityValue {
             let d = u.log10().floor() * -1.0 + 1.0;
             println!("d: {}", d);
             u *= 10f64.powf(d);
-            s.push_str(&format!("{:.*e}", (d + n.log10().floor())  as usize, n));
+            s.push_str(&format!("{:.*e}", (d + n.log10().floor()) as usize, n));
             //s.push_str(&n.to_string());
             s.push('(');
             s.push_str(&u.round().to_string());
+            s.push(')');
+        } else {
+            s.push_str(&n.to_string());
+            s.push('(');
+            s.push_str("...");
             s.push(')');
         }
         s.push(' ');
@@ -97,7 +100,7 @@ impl Mul for QuantityValue {
             q.dimension[i] = self.dimension[i] + other.dimension[i];
         }
         q.uncertainty = q.number.abs()
-            * (self.uncertainty/self.number + other.uncertainty/other.number).sqrt();
+            * (self.uncertainty / self.number + other.uncertainty / other.number).sqrt();
         q
     }
 }
@@ -112,7 +115,7 @@ impl Div for QuantityValue {
             q.dimension[i] = self.dimension[i] - other.dimension[i];
         }
         q.uncertainty = q.number.abs()
-            * (self.uncertainty/self.number + other.uncertainty/other.number).sqrt();
+            * (self.uncertainty / self.number + other.uncertainty / other.number).sqrt();
         q
     }
 }
@@ -130,10 +133,9 @@ macro_rules! base_unit(
 );
 
 impl QuantityValue {
-
     base_unit!(m, kg, s, A, K, mol, cd; 0, 1, 2, 3, 4, 5, 6);
 
-    #[allow(dead_code,non_snake_case)]
+    #[allow(dead_code, non_snake_case)]
     fn W() -> QuantityValue {
         let mut q = QuantityValue::default();
         q.number = f64::one();
@@ -142,59 +144,42 @@ impl QuantityValue {
         q.dimension[2] = DimensionalExponent::one() * -3;
         q
     }
+
+    #[allow(dead_code)]
+    fn recip(&self) -> Self {
+        let q = self.clone();
+        q.pow(-1.0)
+    }
 }
 
-/*
-fn main() {
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    let a = QuantityValue{number:10000f64, uncertainty: 0.0001, ..QuantityValue::m() };
-    let b = QuantityValue{number:10000f64, uncertainty: 0.001, ..QuantityValue::m() };
-    let c = QuantityValue{number:10000f64, uncertainty: 0.01, ..QuantityValue::m() };
-    let d = QuantityValue{number:10000f64, uncertainty: 0.1, ..QuantityValue::m() };
-    let e = QuantityValue{number:10000f64, uncertainty: 1.0, ..QuantityValue::m() };
-    let f = QuantityValue{number:10000f64, uncertainty: 10.0, ..QuantityValue::m() };
-    let g = QuantityValue{number:10000f64, uncertainty: 100.0, ..QuantityValue::m() };
-    let h = QuantityValue{number:10000f64, uncertainty: 1000.0, ..QuantityValue::m() };
-    println!("a: {}", a);
-    println!("b: {}", b);
-    println!("c: {}", c);
-    println!("d: {}", d);
-    println!("e: {}", e);
-    println!("f: {}", f);
-    println!("g: {}", g);
-    println!("h: {}", h);
-    println!("{}", ' ');
-    let a = QuantityValue{number:10000f64, uncertainty: 0.0005, ..QuantityValue::m() };
-    let b = QuantityValue{number:10000f64, uncertainty: 0.005, ..QuantityValue::m() };
-    let c = QuantityValue{number:10000f64, uncertainty: 0.05, ..QuantityValue::m() };
-    let d = QuantityValue{number:10000f64, uncertainty: 0.5, ..QuantityValue::m() };
-    let e = QuantityValue{number:10000f64, uncertainty: 5.0, ..QuantityValue::m() };
-    let f = QuantityValue{number:10000f64, uncertainty: 50.0, ..QuantityValue::m() };
-    let g = QuantityValue{number:10000f64, uncertainty: 500.0, ..QuantityValue::m() };
-    let h = QuantityValue{number:10000f64, uncertainty: 5000.0, ..QuantityValue::m() };
-    println!("a: {}", a);
-    println!("b: {}", b);
-    println!("c: {}", c);
-    println!("d: {}", d);
-    println!("e: {}", e);
-    println!("f: {}", f);
-    println!("g: {}", g);
-    println!("h: {}", h);
+    #[test]
+    fn test_default() {
+        let q = QuantityValue::default();
+        assert_eq!(q.number, 0f64);
+        assert_eq!(q.uncertainty, 0f64);
+    }
 
-    let z = QuantityValue{number:10.3608, uncertainty: 0.0005, ..QuantityValue::default() };
-    let o = QuantityValue{number:50.1234567, uncertainty: 0.000543, ..QuantityValue::default() };
-    //println!("{}", z);
-    let u = z.uncertainty;
-    let t = u.log10();
-    let e = t.trunc();
-    println!("{}", t);
-    println!("{}", e);
-    println!("z: {}", z);
-    println!("o/z: {}", o/z);
-    println!("o*z: {}", o*z);
-    println!("o*z*z: {}", o*z*z);
-    println!("o/z/z: {}", o/z/z);
-    println!("{}", o/z/z/z);
-    println!("{}", o*z*z*z);
+    #[test]
+    //#[should_panic]
+    fn test_recip() {
+        let q = QuantityValue::default();
+        assert_eq!(q.number, 0f64);
+        assert_eq!(q.uncertainty, 0f64);
+        assert!(q.recip().number.is_infinite());
+    }
+
+    #[test]
+    fn test_div_by_zero() {
+        let r = QuantityValue::m();
+        let rho = QuantityValue::kg() / r.pow(3.0);
+        let mut f = QuantityValue::default();
+        f.number = f64::one();
+        f.dimension[0] = DimensionalExponent::one();
+        f.dimension[1] = DimensionalExponent::one() * -1;
+        assert_eq!(r.pow(-2.0) * rho.recip(), f);
+    }
 }
-*/
