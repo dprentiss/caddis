@@ -268,6 +268,7 @@ Pa = kg / m / s / s
 V = kg * m * m / s / s / s / A
 W = kg * m * m / s / s / s
 J = kg * m * m / s / s
+Hz = 1 / s
 
 derivedQuantities = {}
 derivedQuantities[N.quantityDimension.baseQuantityExponents] = 'N'
@@ -275,3 +276,4 @@ derivedQuantities[Pa.quantityDimension.baseQuantityExponents] = 'Pa'
 derivedQuantities[V.quantityDimension.baseQuantityExponents] = 'V'
 derivedQuantities[W.quantityDimension.baseQuantityExponents] = 'W'
 derivedQuantities[J.quantityDimension.baseQuantityExponents] = 'J'
+derivedQuantities[Hz.quantityDimension.baseQuantityExponents] = 'Hz'
