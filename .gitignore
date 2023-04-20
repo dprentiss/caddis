@@ -8,3 +8,4 @@ auto/
 # rust
 caddis/target/
 *.lock
+*.ipynb
