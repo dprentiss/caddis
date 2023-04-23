@@ -129,11 +129,15 @@ class QuantityValue:
         else:
             numDigits = '4'
             uncertaintyStr = '(...)'
-        if engExponent != 0:
-            exponentStr = 'e' + repr(engExponent)
+        if engExponent < 0:
+            exponentStr = ' ' + factorPrefixSymbols[engExponent]
+            #exponentStr = 'e' + repr(engExponent) + ' ' + factorPrefixSymbols[engExponent]
+        elif engExponent > 0:
+            exponentStr = ' ' + factorPrefixSymbols[engExponent]
+            #exponentStr = 'e' + repr(engExponent) + ' ' + factorPrefixSymbols[engExponent]
         else:
-            exponentStr = ""
-        return '{:.{}f}'.format(engMantissa, numDigits) + uncertaintyStr + exponentStr + ' ' + self.reference
+            exponentStr = ' '
+        return '{:.{}f}'.format(engMantissa, numDigits) + uncertaintyStr + exponentStr + self.reference
 
     def __repr__(self):
         return self.__str__()
