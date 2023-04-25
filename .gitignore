@@ -9,3 +9,4 @@ auto/
 caddis/target/
 *.lock
 *.ipynb
+*.ipynb

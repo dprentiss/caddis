@@ -2,6 +2,8 @@ from re import split
 from math import floor, exp, sqrt, log10
 from fractions import Fraction
 
+derivedQuantities = {}
+
 class QuantityDimension:
     dimensionSymbols = (
             ('length', 'L'),
@@ -30,6 +32,7 @@ class QuantityDimension:
                     exponents.update({key: value})
                 else:
                     raise TypeError('\'' + key + '\' is not an ISQ base quantity')
+                    
         self.baseQuantityExponents = frozenset(exponents.items())
 
     def dim(self, key=None):
@@ -116,8 +119,11 @@ class QuantityValue:
                 '' if self.reference == '' else ' ',
                 key if exp !=0 else '',
                 '^' + str(exp) if (exp != 0 and exp != 1) else '')
+            if self.quantityDimension.baseQuantityExponents in derivedQuantities:
+                self.reference = derivedQuantities[self.quantityDimension.baseQuantityExponents]
 
     def __str__(self):
+        self.updateDims()
         exponent = floor(log10(abs(self.number)))
         engExponent = floor(exponent / 3) * 3
         engMantissa = self.number / 10**engExponent
@@ -255,9 +261,9 @@ temp = QuantityDimension({'thermodynamic temperature':1})
 mol = QuantityDimension({'amount of substance':1})
 intensity = QuantityDimension({'luminous intensity':1})
 
-
 factorPrefixSymbols = {-12:'p',-9:'n',-6:'μ',-3:'m',3:'k',6:'M',9:'G',12:'T'}
 baseUnitSymbols = {'length':'m','mass':'kg','time':'s','electric current':'A','thermodynamic temperature':'K','amount of substance':'mol','luminous intensity':'cd'}
+symbolBaseUnits = {'m':length, 'kg':mass, 's':time, 'A':current, 'K':temp, 'mol':mol, 'cd':intensity}
 
 m = QuantityValue(1, 'm', quantityDimension=length)
 kg = QuantityValue(1, 'kg', quantityDimension=mass)
@@ -274,7 +280,6 @@ W = kg * m * m / s / s / s
 J = kg * m * m / s / s
 Hz = 1 / s
 
-derivedQuantities = {}
 derivedQuantities[N.quantityDimension.baseQuantityExponents] = 'N'
 derivedQuantities[Pa.quantityDimension.baseQuantityExponents] = 'Pa'
 derivedQuantities[V.quantityDimension.baseQuantityExponents] = 'V'
