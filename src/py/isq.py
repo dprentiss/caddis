@@ -1,3 +1,4 @@
+import re
 from re import split
 from math import floor, exp, sqrt, log10
 from fractions import Fraction
@@ -97,8 +98,8 @@ class QuantityValue:
                 self.relativeUncertainty = 0
         self.quantityDimension = quantityDimension
 
-        self.referenceList = [split('\^', unit) for unit in
-                              split('\s+', self.reference)]
+        self.referenceList = [split('\\^', unit) for unit in
+                              split('\\s+', self.reference)]
 
         self.dimList = filter(lambda i: (i[0] != '1' and i[0] != ''), [[dim[0], Fraction(dim[1]) if len(dim) == 2 else 1] for dim in self.referenceList])
         self.dimDict = {}
@@ -180,7 +181,8 @@ class QuantityValue:
         if isinstance(other, self.__class__) and self.dimDict == other.dimDict:
             return QuantityValue(self.number + other.number,
                                  self.reference,
-                                 sqrt(self.standardUncertainty**2 + other.standardUncertainty**2))
+                                 sqrt(self.standardUncertainty**2 + other.standardUncertainty**2),
+                                quantityDimension = self.quantityDimension)
         elif isinstance(other, (int, float)) and self.dimDict == {}:
             return QuantityValue(other + self.number,
                                  self.reference,
@@ -258,19 +260,19 @@ mass = QuantityDimension({'mass':1})
 time = QuantityDimension({'time':1})    
 current = QuantityDimension({'electric current':1})
 temp = QuantityDimension({'thermodynamic temperature':1})
-mol = QuantityDimension({'amount of substance':1})
+amount = QuantityDimension({'amount of substance':1})
 intensity = QuantityDimension({'luminous intensity':1})
 
 factorPrefixSymbols = {-12:'p',-9:'n',-6:'μ',-3:'m',3:'k',6:'M',9:'G',12:'T'}
 baseUnitSymbols = {'length':'m','mass':'kg','time':'s','electric current':'A','thermodynamic temperature':'K','amount of substance':'mol','luminous intensity':'cd'}
-symbolBaseUnits = {'m':length, 'kg':mass, 's':time, 'A':current, 'K':temp, 'mol':mol, 'cd':intensity}
+symbolBaseUnits = {'m':length, 'kg':mass, 's':time, 'A':current, 'K':temp, 'mol':amount, 'cd':intensity}
 
 m = QuantityValue(1, 'm', quantityDimension=length)
 kg = QuantityValue(1, 'kg', quantityDimension=mass)
 s = QuantityValue(1, 's', quantityDimension=time)
 A = QuantityValue(1, 'A', quantityDimension=current)
 K = QuantityValue(1, 'K', quantityDimension=temp)
-mol = QuantityValue(1, 'mol', quantityDimension=mol)
+mol = QuantityValue(1, 'mol', quantityDimension=amount)
 cd = QuantityValue(1, 'cd', quantityDimension=intensity)
 
 N = kg * m / s / s
@@ -286,3 +288,18 @@ derivedQuantities[V.quantityDimension.baseQuantityExponents] = 'V'
 derivedQuantities[W.quantityDimension.baseQuantityExponents] = 'W'
 derivedQuantities[J.quantityDimension.baseQuantityExponents] = 'J'
 derivedQuantities[Hz.quantityDimension.baseQuantityExponents] = 'Hz'
+
+class Measurements:
+    def __init__(self, quantityValue = None, standardUncertainty = 0, numbers = []):
+        self.mean = QuantityValue(0, quantityValue.reference, quantityDimension = quantityValue.quantityDimension)
+
+        self.quantityValue = quantityValue
+        self.standardUncertainty = standardUncertainty
+        self.measurements = [QuantityValue(measurement, self.quantityValue.reference,       standardUncertainty, quantityDimension =quantityValue.quantityDimension) for measurement in numbers]
+
+        for measurement in self.measurements:
+            print(measurement)
+            self.mean = self.mean + measurement
+
+        self.mean = self.mean / len(self.measurements)
+

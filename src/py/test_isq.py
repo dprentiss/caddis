@@ -8,6 +8,16 @@ class TestQuantityDimension(unittest.TestCase):
         self.assertEqual(str(q), 'L', "Should be 'L'")
         q = isq.mass
         self.assertEqual(str(q), 'M', "Should be 'M'")
+        q = isq.time
+        self.assertEqual(str(q), 'T', "Should be 'T'")
+        q = isq.current
+        self.assertEqual(str(q), 'I', "Should be 'I'")
+        q = isq.temp
+        self.assertEqual(str(q), 'Θ', "Should be 'Θ'")
+        q = isq.amount 
+        self.assertEqual(str(q), 'N', "Should be 'N'")
+        q = isq.intensity
+        self.assertEqual(str(q), 'J', "Should be 'J'")
 
 class TestQuantityValue(unittest.TestCase):
 
